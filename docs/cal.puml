@@ -1,0 +1,89 @@
+@startuml
+
+skinparam stereotypeCBorderColor Black
+skinparam stereotypeCBackgroundColor White
+skinparam stereotypeEBackgroundColor White
+skinparam handwritten true
+'skinparam class {
+'    BackgroundColor<<NotInApp>> Red
+'    BackgroundColor<<NotReady>> Orange
+'    BackgroundColor<<HasIssues>> Yellow
+'    BackgroundColor<<AllSet>> PaleGreen
+'    BackgroundColor<<WeDeleted>> LightBlue
+'    BackgroundColor<<Refactor>> #5757FF
+'    BackgroundColor<<Proposed>> Green
+'}
+
+'skinparam package {
+'    BackgroundColor<<AllSet>> PaleGreen
+'    BackgroundColor<<NotReady>> Orange
+'}
+
+class Calendar {
+	Календарь
+	--
+	owner			[1]		CalendarUser
+	events			[*]		CalendarEvent
+}
+
+class CalendarEvent {
+	Событие календаря
+	--
+	created			[1]		DateTime
+	dateTimeBegin	[1]		DateTime
+	dateTimeEnd		[1]		DateTime
+	parent			[0..1]	CalendarEvent
+	name			[1]		String
+	description		[0..1]	String
+	participants	[*]		CalendarUser
+	watchers		[*]		CalendarUser
+	attachments		[*]		FileDescriptor
+	tag				[0..1]	EventTag
+}
+
+class EventTag {
+	value			[1]		String
+	color			[1]		String
+}
+
+class event_to_user << (T, red) >> {
+	Таблица, разрешающая \nсвязь много-ко-многим \nдля события и пользователя
+	--
+	CalendarUser (В событие \nможно пригласить много \nпользователей)
+	--
+	CalendarEvent (Пользователь \nможет быть приглашён \nво много событий)
+}
+
+class CalendarUser {
+	Пользователь
+	--
+	name			[1]		String
+	mail			[0..1]	String
+	birthDate		[1]		Date
+	
+}
+
+class Comment {
+	Комментарий
+	--
+	createdBy		[1]		CalendarUser
+	created			[1]		DateTime
+	value			[1]		String
+}
+
+class event_to_tag << (T, red) >> {
+	Таблица, разрешающая \nсвязь много-ко-многим \nдля события и тега
+	--
+	EventTag (Событие \nможно пометить большим \nколичеством тегов)
+	--
+	CalendarEvent (Одним тегом \nможет быть помечено \nво много событий)
+}
+
+
+CalendarUser "1" -right- "*" Calendar : Один пользователь \nможет создавать \nмножество >
+Calendar "1" -- "*" CalendarEvent : В одном календаре \nможет содержаться \nнесколько >
+CalendarEvent "1" -- "*" Comment : Одно событие \nможет содержать \nмного >
+CalendarEvent "1" -- "*" CalendarEvent : < Событие может \nбыть порождено \nдругим событием
+CalendarEvent "1" -left- "*" event_to_tag
+EventTag "1" -left- "*" event_to_tag
+@enduml
